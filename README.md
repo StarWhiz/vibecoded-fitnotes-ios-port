@@ -206,10 +206,9 @@ AltStore can auto-refresh the app in the background (requires AltStore to be run
 
 ### Importing Your Android Data
 
-1. In the Android FitNotes app: **Menu → Backup & Restore → Backup**
-2. Transfer the `.fitnotes` file to your iPhone (AirDrop, iCloud Drive, USB)
-3. In the iOS app: **Settings → Import from Android → Choose File**
-4. The import verification screen will confirm all your sets, exercises, and categories transferred correctly
+> ⚠️ **Import is currently broken.** The import flow gets stuck in a loop and does not complete successfully. This is a known issue caused by the vibe-coded nature of the project and won't be fixed anytime soon. If preserving your Android history is the main reason you're here, hold off until this is resolved.
+
+The import flow *exists* in the app (Settings → Import from Android) but should be considered non-functional at this time.
 
 ---
 
