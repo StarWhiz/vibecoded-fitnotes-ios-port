@@ -149,6 +149,61 @@ To avoid rebuilding every 7 days without a paid account:
 
 ---
 
+### Building an IPA for AltStore (No Paid Account Required)
+
+Xcode's built-in export options all require a paid Apple Developer account. You can work around this by manually extracting the app binary from an archive. This `.ipa` can then be sideloaded with AltStore.
+
+#### Step 1 — Archive the app
+
+In Xcode (with your iPhone **not** connected, or with **Any iOS Device (arm64)** selected as the destination):
+
+> **Product → Archive**
+
+Xcode will build a release archive. When it finishes, the **Organizer** window opens automatically.
+
+#### Step 2 — Locate the archive in Finder
+
+In the Organizer, right-click your archive and choose **Show in Finder**, or navigate directly to:
+
+```
+~/Library/Developer/Xcode/Archives/
+```
+
+The archive is a folder named something like `FitNotes 2026-04-19 12.00.00.xcarchive`.
+
+#### Step 3 — Open the package contents
+
+Right-click the `.xcarchive` file → **Show Package Contents**
+
+Navigate into:
+
+```
+Products → Applications
+```
+
+You will see `FitNotes.app` inside that folder.
+
+#### Step 4 — Extract and repackage as an IPA
+
+1. **Drag `FitNotes.app` to your Desktop** (or any working folder)
+2. Create a new folder named exactly **`Payload`** (capital P, no spaces)
+3. Move `FitNotes.app` **inside** the `Payload` folder
+4. Right-click the `Payload` folder → **Compress "Payload"** — this creates `Payload.zip`
+5. Rename `Payload.zip` → **`FitNotes.ipa`**
+
+> An `.ipa` is just a zip file containing a `Payload/` folder with the `.app` inside. Renaming is all that's needed.
+
+#### Step 5 — Sideload with AltStore
+
+1. Install [AltStore](https://altstore.io) on your iPhone and Mac (follow their setup guide)
+2. Open AltStore on your iPhone
+3. Tap the **+** button → select your `FitNotes.ipa`
+4. AltStore signs and installs it using your Apple ID
+
+AltStore can auto-refresh the app in the background (requires AltStore to be running on your Mac on the same Wi-Fi), keeping the 7-day certificate renewed without reconnecting to Xcode.
+
+---
+
 ### Importing Your Android Data
 
 1. In the Android FitNotes app: **Menu → Backup & Restore → Backup**

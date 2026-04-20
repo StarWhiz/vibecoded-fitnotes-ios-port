@@ -9,6 +9,7 @@
 
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(AppSettingsStore.self) private var settingsStore
@@ -18,6 +19,9 @@ struct SettingsView: View {
     @State private var showDeleteHistory = false
     @State private var showImportBackup = false
     @State private var isRecalculating = false
+    @State private var isImporting = false
+    @State private var importReport: ImportVerificationReport? = nil
+    @State private var importError: String? = nil
 
     var body: some View {
         @Bindable var settings = settingsStore
@@ -133,6 +137,52 @@ struct SettingsView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Settings")
+        .fileImporter(
+            isPresented: $showImportBackup,
+            allowedContentTypes: [UTType.item],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                runImport(url: url)
+            case .failure(let error):
+                importError = error.localizedDescription
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { importReport != nil },
+            set: { if !$0 { importReport = nil } }
+        )) {
+            if let report = importReport {
+                ImportVerificationView(report: report)
+            }
+        }
+        .overlay {
+            if isImporting {
+                ZStack {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
+                        Text("Importing…")
+                            .foregroundStyle(.white)
+                            .font(.headline)
+                    }
+                    .padding(32)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        }
+        .alert("Import Failed", isPresented: Binding(
+            get: { importError != nil },
+            set: { if !$0 { importError = nil } }
+        )) {
+            Button("OK") { importError = nil }
+        } message: {
+            Text(importError ?? "")
+        }
         .alert("Recalculate PRs?", isPresented: $showRecalculatePRs) {
             Button("Cancel", role: .cancel) { }
             Button("Recalculate") {
@@ -168,6 +218,29 @@ struct SettingsView: View {
             }
             try? context.save()
             isRecalculating = false
+        }
+    }
+
+    private func runImport(url: URL) {
+        let accessing = url.startAccessingSecurityScopedResource()
+        isImporting = true
+        let container = context.container
+        Task.detached {
+            do {
+                let importer = try SQLiteImporter(fileURL: url, container: container)
+                let report = try importer.importBackup()
+                if accessing { url.stopAccessingSecurityScopedResource() }
+                await MainActor.run {
+                    isImporting = false
+                    importReport = report
+                }
+            } catch {
+                if accessing { url.stopAccessingSecurityScopedResource() }
+                await MainActor.run {
+                    isImporting = false
+                    importError = error.localizedDescription
+                }
+            }
         }
     }
 

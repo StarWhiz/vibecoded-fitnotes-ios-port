@@ -38,7 +38,6 @@ struct ImportVerificationView: View {
                     Button("Close") {
                         dismiss()
                     }
-                    .disabled(!report.passed)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !report.passed {

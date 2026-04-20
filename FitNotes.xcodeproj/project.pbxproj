@@ -72,6 +72,7 @@
 		E7CB7AA175353020B17DA436 /* ImportVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121485EDE863FE9FE85F559 /* ImportVerificationView.swift */; };
 		EC5BC696AE72DA0B613A7CA3 /* WorkoutCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B1E159AB923348153F86151 /* WorkoutCategory.swift */; };
 		ECF8DD408CDE62EEE4F5A03B /* ExerciseManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319D8C2607803289CD34E2BF /* ExerciseManagementView.swift */; };
+		ED7BD4EA046D4C112CE5D81A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 298BB5FFB956244855422647 /* Assets.xcassets */; };
 		EE5455BFB6EB496374FFC129 /* StartRestTimerIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB736B19D664FA4D350F463D /* StartRestTimerIntent.swift */; };
 		F213DF9AA38C0DD3B28E1412 /* ExerciseGraphFavourite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBB503E33BAD1FC65161849 /* ExerciseGraphFavourite.swift */; };
 		F220393BB8EF92E262046ABB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22926ACC819DCA2D3AD181F /* ContentView.swift */; };
@@ -99,6 +100,7 @@
 		19CE5C7E80C3878756536CF6 /* CopyMoveWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyMoveWorkoutSheet.swift; sourceTree = "<group>"; };
 		1A2A14303A458AF28709015C /* PlateCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlateCalculator.swift; sourceTree = "<group>"; };
 		1A9BC24DF603AAEEED02598B /* OneRMCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneRMCalculator.swift; sourceTree = "<group>"; };
+		298BB5FFB956244855422647 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DFB6F224D4E004CECFF7923 /* NavigationPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPanelView.swift; sourceTree = "<group>"; };
 		319D8C2607803289CD34E2BF /* ExerciseManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseManagementView.swift; sourceTree = "<group>"; };
 		367449F3A8C4C8353F553B52 /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
@@ -287,6 +289,7 @@
 				6E71EF907410B29830BEC972 /* Products */,
 				A78C45F30498806854BBF2D0 /* LiveActivity */,
 				2BEAEECEA22B9F8871CFDFDD /* Intents */,
+				298BB5FFB956244855422647 /* Assets.xcassets */,
 			);
 			sourceTree = "<group>";
 		};
@@ -322,6 +325,7 @@
 			buildPhases = (
 				95646F45DA64EBF70CFD2D27 /* Sources */,
 				384F4AF28127BE06073784B7 /* Frameworks */,
+				27FF11A3AA65ACDFCD503BAF /* Resources */,
 			);
 			buildRules = (
 			);
@@ -354,7 +358,7 @@
 			mainGroup = 90E9044F1A57EA717DC02C6B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB" */,
+				6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6E71EF907410B29830BEC972 /* Products */;
@@ -365,6 +369,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		27FF11A3AA65ACDFCD503BAF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ED7BD4EA046D4C112CE5D81A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		95646F45DA64EBF70CFD2D27 /* Sources */ = {
@@ -656,7 +671,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+		6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
@@ -669,7 +684,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		28E552B796E2812ECABF3C08 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB" */;
+			package = 6FFE2CAAC23CB97B819CDB33 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
