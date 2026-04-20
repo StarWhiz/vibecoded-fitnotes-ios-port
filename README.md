@@ -10,7 +10,7 @@ A native iOS workout tracker built as an unofficial port of the popular Android 
 
 ## Why This Exists
 
-FitNotes on Android is excellent. It has no official iOS app. If you've been logging workouts in FitNotes for years and switched to iPhone, you'd lose your entire history. This project solves that — it imports your existing `.fitnotes` backup and picks up exactly where you left off.
+FitNotes on Android is excellent. It has no official iOS app, there are paid ones like Fitnotes 2 that are very good clones without bugs, but they are freemium and require paying $$$ after using them for a while. This one has a problem where you can't import notes from the .fitnotes Android backup format.
 
 ---
 
