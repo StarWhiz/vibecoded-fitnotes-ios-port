@@ -13,6 +13,7 @@ struct SetRowView: View {
     let entry: TrainingEntry
     let setNumber: Int
     var isSelected: Bool = false
+    var onDelete: (() -> Void)? = nil
 
     @Environment(AppSettingsStore.self) private var settingsStore
     @Environment(\.modelContext) private var context
@@ -54,6 +55,16 @@ struct SetRowView: View {
                 Image(systemName: "text.bubble.fill")
                     .font(.caption)
                     .foregroundStyle(.blue)
+            }
+
+            // Inline delete when selected
+            if isSelected, let onDelete {
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash.fill")
+                        .font(.caption)
+                }
+                .buttonStyle(.borderless)
+                .padding(.leading, 4)
             }
         }
         .padding(.vertical, 4)

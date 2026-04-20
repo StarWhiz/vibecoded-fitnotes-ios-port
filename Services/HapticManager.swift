@@ -6,6 +6,7 @@
 //  Reinforces actions without sound — critical in a noisy gym.
 //
 
+import AudioToolbox
 import UIKit
 
 enum HapticManager {
@@ -27,9 +28,15 @@ enum HapticManager {
         }
     }
 
-    /// Rest timer expired — warning notification.
+    /// Rest timer expired — warning haptic + three alert dings.
+    /// AudioServicesPlayAlertSound plays through the alert channel and respects the ringer switch.
     static func restTimerExpired() {
         UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        for i in 0..<3 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) {
+                AudioServicesPlayAlertSound(1005)
+            }
+        }
     }
 
     /// Set deleted — light impact.
