@@ -22,55 +22,60 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                NavigationStack {
-                    HomeView()
-                }
-                .tag(Tab.home)
-                .tabItem {
-                    Label("Workout", systemImage: "dumbbell.fill")
-                }
-
-                NavigationStack {
-                    CalendarView()
-                }
-                .tag(Tab.calendar)
-                .tabItem {
-                    Label("Calendar", systemImage: "calendar")
-                }
-
-                NavigationStack {
-                    BodyTrackerView()
-                }
-                .tag(Tab.bodyTracker)
-                .tabItem {
-                    Label("Body", systemImage: "figure.stand")
-                }
-
-                NavigationStack {
-                    SettingsView()
-                }
-                .tag(Tab.settings)
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
-                }
+        TabView(selection: $selectedTab) {
+            NavigationStack {
+                HomeView()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { timerBanner }
+            .tag(Tab.home)
+            .tabItem {
+                Label("Workout", systemImage: "dumbbell.fill")
             }
 
-            // Floating rest timer banner visible across all tabs
-            if timerStore.state.isActive {
-                RestTimerBannerView()
-                    .padding(.bottom, 50) // above tab bar
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            NavigationStack {
+                CalendarView()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { timerBanner }
+            .tag(Tab.calendar)
+            .tabItem {
+                Label("Calendar", systemImage: "calendar")
+            }
+
+            NavigationStack {
+                BodyTrackerView()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { timerBanner }
+            .tag(Tab.bodyTracker)
+            .tabItem {
+                Label("Body", systemImage: "figure.stand")
+            }
+
+            NavigationStack {
+                SettingsView()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { timerBanner }
+            .tag(Tab.settings)
+            .tabItem {
+                Label("Settings", systemImage: "gearshape.fill")
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: timerStore.state.isActive)
         .preferredColorScheme(colorScheme)
         .onChange(of: workoutStore.isWorkoutActive) { _, isActive in
             UIApplication.shared.isIdleTimerDisabled = isActive
         }
         .task {
             try? workoutStore.load(for: workoutStore.date, context: context)
+        }
+    }
+
+    // Rendered inside each tab's NavigationStack via safeAreaInset so the banner
+    // sits above the tab bar rather than overlapping it.
+    @ViewBuilder
+    private var timerBanner: some View {
+        if timerStore.state.isActive {
+            RestTimerBannerView()
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.25), value: timerStore.state.isActive)
         }
     }
 
