@@ -105,6 +105,8 @@ Wait for Xcode to resolve the Swift Package dependencies (GRDB.swift). This happ
 5. Change the **Bundle Identifier** to something unique, e.g. `com.YOURNAME.fitnotes`
    - This is required because free Apple IDs can't reuse bundle IDs from other developers
 
+![Signing & Capabilities tab in Xcode](screenshots/signing-capabilities.png)
+
 ### Step 4 — Connect your iPhone
 
 1. Plug your iPhone into your Mac with a USB cable
