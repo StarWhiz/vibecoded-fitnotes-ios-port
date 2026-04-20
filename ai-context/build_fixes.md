@@ -309,10 +309,159 @@ Xcode's incremental build cache retained compiled artifacts from the pre-fix sou
 
 ---
 
+---
+
+## 17. Timer Banner Blocking Tab Bar Navigation
+
+**Date:** 2026-04-19
+
+### Problem
+The rest timer banner rendered over the bottom tab bar, making the navigation buttons unreachable.
+
+### Root Cause
+The banner was placed in a `ZStack` over the entire `TabView` with a fixed 50pt bottom padding. On iPhones with a home indicator the tab bar is 49pt content + 34pt home indicator = 83pt total, so the fixed padding was insufficient.
+
+### Fix
+Removed the `ZStack`. Attached the banner to each `NavigationStack` inside `TabView` via `.safeAreaInset(edge: .bottom, spacing: 0)`. This is device-agnostic — SwiftUI automatically places the inset above the tab bar on all form factors.
+
+```swift
+// ContentView.swift — same pattern for all 4 tabs
+NavigationStack { HomeView() }
+    .safeAreaInset(edge: .bottom, spacing: 0) { timerBanner }
+    .tag(Tab.home)
+    .tabItem { ... }
+```
+
+---
+
+## 18. Rest Timer Pause / Resume / Restart
+
+**Date:** 2026-04-19
+
+### Addition
+Added full pause/resume/restart control to the rest timer.
+
+**`RestTimerState`** — added `.paused(remainingSeconds:totalSeconds:exerciseName:)` case; `isActive` now returns `true` for `.running`, `.paused`, and `.expired`.
+
+**`RestTimerStore`** — added three methods:
+- `pause()` — cancels the countdown task, ends Live Activity, stores remaining seconds in `.paused` state
+- `resume()` — computes `endsAt = now + remainingSeconds`, restarts task and Live Activity
+- `restart()` — calls `start()` with the original `totalSeconds`
+
+**UI** — `RestTimerBannerView` and `TrainingView.restTimerSection` updated:
+- Running: `+30s`, ⏸ pause, ✕ stop
+- Paused: dimmed ring, ⟳ restart, ▶ resume, ✕ stop
+
+---
+
+## 19. Set Deletion UX
+
+**Date:** 2026-04-19
+
+### Problem
+The only way to delete a logged set was to tap the row (selecting it), then find and tap the "Delete" button that appeared in the input area at the top of the screen — not obvious.
+
+### Fix
+Two complementary affordances added:
+
+1. **Swipe-to-delete** (`.swipeActions(edge: .trailing, allowsFullSwipe: true)`) on every set row — standard iOS pattern, works on any row regardless of selection state.
+2. **Inline trash icon** on the selected row — when a row is tapped (blue highlight), a `trash.fill` button appears at the trailing edge of that row via `onDelete` callback passed into `SetRowView`.
+
+---
+
+## 20. Weight TextField Lag — Deeper Fix (TrainingInputState)
+
+**Date:** 2026-04-19
+
+### Problem
+Weight field was still sluggish after the List-root fix (§15), especially with several logged sets.
+
+### Root Cause
+All text-field `@State` (`weightText`, `repsText`, etc.) lived directly on `TrainingView`. In SwiftUI, any `@State` mutation causes the containing view's `body` to re-evaluate. That re-evaluation rebuilds `loggedSetsList`, calling `Array(session.sets.enumerated())` on every keystroke — O(n) SwiftData relationship access even though the list itself didn't change.
+
+### Fix
+Extracted all text-field state into `TrainingInputState`, a dedicated `@Observable` final class. SwiftUI's observation system tracks property access at the point of use: only `TrainingInputCard` (the child struct) accesses `inputState.weightText`, so only it re-renders on keystrokes. `TrainingView` (which owns the `List`) never re-renders during typing.
+
+```swift
+@Observable final class TrainingInputState {
+    var weightText = ""
+    var repsText = ""
+    // ...
+}
+
+// TrainingView holds the instance as @State (reference doesn't change):
+@State private var inputState = TrainingInputState()
+
+// TrainingInputCard owns @Bindable for TextField binding syntax:
+@Bindable var inputState: TrainingInputState
+```
+
+**Rule for future edits:** If a view contains both a `List`/`ForEach` and text fields, always isolate the text `@State` in a child view or `@Observable` object so keystrokes don't invalidate the list's parent body.
+
+---
+
+## 21. Weight Prefill Non-Deterministic for Same-Day Sets
+
+**Date:** 2026-04-19
+
+### Problem
+After logging set 1 at 120 lbs and set 2 at 125 lbs, the field sometimes prefilled 120 instead of 125 when starting set 3.
+
+### Root Cause
+`prefillFromLastSession` sorted `exercise.trainingEntries` by `date`, which is stored as midnight UTC for all sets on the same day. Among same-day sets the sort order is non-deterministic — SwiftData can return them in any order, so set 1 could win over set 2.
+
+### Fix
+Replaced the sorted-date approach with `session.sets.last`. `session.sets` is an in-memory array appended in save order, so `.last` is always the most recently logged set regardless of date.
+
+```swift
+// session.sets is append-ordered, .last = most recently saved
+if let last = session?.sets.last {
+    entry = last
+} else {
+    // First set of the day — fall back to most recent historical set
+    entry = exercise.trainingEntries
+        .filter { !Calendar.current.isDate($0.date, inSameDayAs: workoutStore.date) }
+        .sorted { $0.date > $1.date }
+        .first
+}
+```
+
+Prefill now carries forward within the session after every save (including when fields are cleared post-save).
+
+---
+
+## 22. No Alarm Sound on Timer Expiry (Foreground)
+
+**Date:** 2026-04-19
+
+### Problem
+When the rest timer expired while the app was in the foreground, only a haptic vibration fired. The scheduled `UNUserNotificationCenter` notification is suppressed by iOS when the app is active, so no sound played.
+
+### Fix
+Added `AudioToolbox` import to `HapticManager`. `restTimerExpired()` now plays three "ding" sounds (system sound ID 1005) spaced 0.5 s apart via `AudioServicesPlayAlertSound`, which routes through the ringer/alert channel. If the device is on silent, it falls back to vibration only — appropriate gym behavior.
+
+```swift
+// Services/HapticManager.swift
+import AudioToolbox
+
+static func restTimerExpired() {
+    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+    for i in 0..<3 {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) {
+            AudioServicesPlayAlertSound(1005)
+        }
+    }
+}
+```
+
+---
+
 ## Current State
 
 - **BUILD SUCCEEDED** — zero errors
-- Rest timer counts down correctly and shows expired banner
-- Weight input field is responsive with no lag
+- Rest timer counts down, pauses, resumes, restarts, and sounds an alarm on expiry
+- Weight input field is responsive with no lag (text state isolated in `TrainingInputState`)
+- Weight prefill always uses the most recently logged set within the session
+- Set rows support swipe-to-delete and inline trash icon when selected
 - All SwiftData models correctly configured (one-sided `@Relationship` pattern)
 - Widget extension target (`Widget/`) — files exist on disk but are not yet added to a widget extension target in xcodeproj. Rest timer Live Activity will not function until that target is created.
