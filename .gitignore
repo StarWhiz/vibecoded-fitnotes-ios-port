@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Xcode derived data & build artifacts
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.xcarchive
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Zip backups
+*.zip
