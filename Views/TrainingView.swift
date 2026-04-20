@@ -290,25 +290,45 @@ struct TrainingView: View {
     @ViewBuilder
     private var restTimerSection: some View {
         if case .running(_, _, let name) = timerStore.state, name == exercise?.name {
-            HStack {
-                Image(systemName: "timer")
-                    .foregroundStyle(.orange)
+            HStack(spacing: 8) {
+                Image(systemName: "timer").foregroundStyle(.orange)
                 Text("Rest: \(timerStore.remainingSeconds)s")
                     .font(.subheadline.monospacedDigit())
                 Spacer()
-                Button("Skip") {
-                    timerStore.stop()
+                Button("+30s") { timerStore.addTime(30) }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                Button { timerStore.pause() } label: {
+                    Image(systemName: "pause.circle.fill").foregroundStyle(.orange)
                 }
                 .buttonStyle(.bordered)
-                .tint(.orange)
-                Button("+30s") {
-                    timerStore.addTime(30)
+                Button { timerStore.stop() } label: {
+                    Image(systemName: "xmark").foregroundStyle(.secondary)
                 }
                 .buttonStyle(.bordered)
             }
             .padding(.horizontal)
             .padding(.vertical, 6)
             .background(Color.orange.opacity(0.1))
+        } else if case .paused(_, _, let name) = timerStore.state, name == exercise?.name {
+            HStack(spacing: 8) {
+                Image(systemName: "pause.circle").foregroundStyle(.orange)
+                Text("Paused: \(timerStore.remainingSeconds)s")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button { timerStore.restart() } label: {
+                    Image(systemName: "arrow.counterclockwise").foregroundStyle(.secondary)
+                }
+                .buttonStyle(.bordered)
+                Button { timerStore.resume() } label: {
+                    Label("Resume", systemImage: "play.fill").foregroundStyle(.orange)
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .background(Color.orange.opacity(0.05))
         }
     }
 

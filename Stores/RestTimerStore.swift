@@ -58,6 +58,37 @@ import UserNotifications
         task = Task { await runCountdown(until: newEnd, exerciseName: name) }
     }
 
+    func pause() {
+        guard case .running(_, let totalSeconds, let exerciseName) = state else { return }
+        task?.cancel()
+        cancelNotification()
+        endLiveActivity()
+        state = .paused(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, exerciseName: exerciseName)
+    }
+
+    func resume() {
+        guard case .paused(_, let totalSeconds, let exerciseName) = state else { return }
+        let endsAt = Date.now.addingTimeInterval(Double(remainingSeconds))
+        state = .running(endsAt: endsAt, totalSeconds: totalSeconds, exerciseName: exerciseName)
+        scheduleNotification(seconds: remainingSeconds, exerciseName: exerciseName)
+        startLiveActivity(endsAt: endsAt, exerciseName: exerciseName)
+        task = Task { await runCountdown(until: endsAt, exerciseName: exerciseName) }
+    }
+
+    func restart() {
+        let totalSecs: Int
+        let name: String
+        switch state {
+        case .running(_, let total, let exerciseName):
+            totalSecs = total; name = exerciseName
+        case .paused(_, let total, let exerciseName):
+            totalSecs = total; name = exerciseName
+        default:
+            return
+        }
+        start(seconds: totalSecs, exerciseName: name)
+    }
+
     // MARK: - Countdown loop
 
     private func runCountdown(until end: Date, exerciseName: String) async {
