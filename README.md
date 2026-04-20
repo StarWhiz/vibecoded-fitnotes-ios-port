@@ -1,5 +1,5 @@
 # FitNotes iOS
-Hi all, I was tired of having to pay premium for something that was available on Android for free. This is vibe-coded so it will not be maintained much
+Hi all, I was tired of having to pay premium for something that was available on Android for free. This is vibe-coded so it will not be maintained much. From here on out is all words by Claude AI not my words. Enjoy! - StarWhiz
 
 
 A native iOS workout tracker built as an unofficial port of the popular Android app [FitNotes](https://play.google.com/store/apps/details?id=com.github.jamesgill.fitnotes) by James Gill. Built with SwiftUI and SwiftData for iOS 17+.
@@ -70,23 +70,87 @@ FitNotes on Android is excellent. It has no official iOS app. If you've been log
 ## Getting Started
 
 ### Requirements
-- Xcode 15+
-- iOS 17+ deployment target
-- A `.fitnotes` backup file from the Android app (optional — you can also start fresh)
+- A Mac running macOS 13 (Ventura) or later
+- [Xcode 15+](https://apps.apple.com/app/xcode/id497799835) — free on the Mac App Store
+- An Apple ID (free — no paid developer account required to install on your own iPhone)
+- iPhone running iOS 17 or later
+- A `.fitnotes` backup file from the Android app (optional — you can start fresh)
 
-### Build
+---
 
-1. Clone the repo
-2. Open `FitNotes.xcodeproj` in Xcode
-3. Select your target device or simulator
-4. Build and run (`⌘R`)
+## Building & Installing on Your iPhone
+
+### Step 1 — Clone the repo
+
+```bash
+git clone https://github.com/StarWhiz/vibecoded-fitnotes-ios-port.git
+cd vibecoded-fitnotes-ios-port
+```
+
+### Step 2 — Open in Xcode
+
+```bash
+open FitNotes.xcodeproj
+```
+
+Wait for Xcode to resolve the Swift Package dependencies (GRDB.swift). This happens automatically and takes ~30 seconds on first open.
+
+### Step 3 — Set your Team (signing)
+
+1. In Xcode, click the **FitNotes** project in the left sidebar
+2. Select the **FitNotes** target under TARGETS
+3. Go to the **Signing & Capabilities** tab
+4. Under **Team**, select your Apple ID from the dropdown
+   - If your Apple ID isn't listed: **Xcode → Settings → Accounts → + → Apple ID**
+5. Change the **Bundle Identifier** to something unique, e.g. `com.YOURNAME.fitnotes`
+   - This is required because free Apple IDs can't reuse bundle IDs from other developers
+
+### Step 4 — Connect your iPhone
+
+1. Plug your iPhone into your Mac with a USB cable
+2. On your iPhone, tap **Trust** when prompted
+3. In Xcode, select your iPhone from the device dropdown at the top (next to the play button)
+
+### Step 5 — Build and install
+
+Press **⌘R** or click the ▶ Play button. Xcode will build the app and install it directly to your iPhone.
+
+**First launch may fail** with "Untrusted Developer" — fix it on your iPhone:
+> **Settings → General → VPN & Device Management → [Your Apple ID] → Trust**
+
+Then open the app normally.
 
 > The app seeds 8 built-in exercise categories on first launch. No setup required to start logging workouts immediately.
+
+---
+
+### Free Apple ID vs Paid Developer Account
+
+| | Free Apple ID | Paid ($99/yr) |
+|---|---|---|
+| Install on your own iPhone | ✅ | ✅ |
+| Certificate expires | Every **7 days** | Every 1 year |
+| Max devices | 3 apps at a time | Unlimited |
+| Distribute to others | ❌ | ✅ (TestFlight / App Store) |
+| Works for personal use | ✅ | ✅ |
+
+With a free Apple ID you'll need to reconnect your iPhone to Xcode and rebuild every 7 days to keep the app installed. This is Apple's limitation, not this app's.
+
+---
+
+### Keeping It Installed (Free Account Workaround)
+
+To avoid rebuilding every 7 days without a paid account:
+
+- **[AltStore](https://altstore.io)** — sideloading tool that auto-refreshes apps in the background using your Apple ID. Install AltStore on your iPhone, then use it to sideload the `.ipa` from Xcode.
+- **Paid Apple Developer account** ($99/year) — signs the app for a full year. Worth it if you plan to tinker with multiple apps.
+
+---
 
 ### Importing Your Android Data
 
 1. In the Android FitNotes app: **Menu → Backup & Restore → Backup**
-2. Transfer the `.fitnotes` file to your iPhone (AirDrop, Files app, etc.)
+2. Transfer the `.fitnotes` file to your iPhone (AirDrop, iCloud Drive, USB)
 3. In the iOS app: **Settings → Import from Android → Choose File**
 4. The import verification screen will confirm all your sets, exercises, and categories transferred correctly
 
