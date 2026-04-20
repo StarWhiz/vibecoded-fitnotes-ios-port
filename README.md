@@ -1,4 +1,6 @@
 # FitNotes iOS
+Hi all, I was tired of having to pay premium for something that was available on Android for free. This is vibe-coded so it will not be maintained much
+
 
 A native iOS workout tracker built as an unofficial port of the popular Android app [FitNotes](https://play.google.com/store/apps/details?id=com.github.jamesgill.fitnotes) by James Gill. Built with SwiftUI and SwiftData for iOS 17+.
 
