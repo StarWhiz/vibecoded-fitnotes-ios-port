@@ -219,11 +219,100 @@ Moved the `+` button to a permanent toolbar position (always visible, not behind
 
 ---
 
+## 13. Rest Timer Frozen at Starting Value
+
+**Date:** 2026-04-19
+
+### Problem
+The rest timer banner and inline training view timer displayed the correct starting value (e.g. 120 s) but never counted down — it stayed frozen for the entire duration.
+
+### Root Cause
+`RestTimerState` is `Equatable`. The countdown `Task` never mutated the `state` property during the countdown — it only changed it once at expiry (`.expired`). An earlier attempted fix reassigned `state` to the same enum value each second, but SwiftUI's `@Observable` machinery deduplicates mutations on `Equatable` value types, so no re-renders were triggered.
+
+### Fix
+Added `private(set) var remainingSeconds: Int = 0` as a dedicated stored property on `RestTimerStore`. This is an `Int` (not `Equatable`-deduplicated in practice because the value changes every second: 120 → 119 → …). The countdown task now sets `remainingSeconds` each second via `await MainActor.run`. Views read `timerStore.remainingSeconds` directly instead of computing it from the `state` enum.
+
+**Files changed:**
+- `Stores/RestTimerStore.swift` — added `remainingSeconds`, updated `start()`, `stop()`, `addTime()`, and `runCountdown()`
+- `Views/RestTimerBannerView.swift` — reads `timerStore.remainingSeconds` for countdown text and ring progress
+- `Views/TrainingView.swift` — reads `timerStore.remainingSeconds` in inline rest timer section
+
+### Rule for future edits
+Never drive a per-second countdown display by reassigning the same `Equatable` enum value. Use a dedicated `Int` or `TimeInterval` stored property whose value actually changes each tick.
+
+---
+
+## 14. Expired Timer Banner Never Shown
+
+### Problem
+After the rest timer reached zero, the "Time's up! Dismiss" banner (`.expired` state) never appeared in the global overlay.
+
+### Root Cause
+`RestTimerState.isActive` only returned `true` for `.running`, not `.expired`. `ContentView` gates the `RestTimerBannerView` overlay on `timerStore.state.isActive`, so the expired view was always hidden.
+
+### Fix
+Changed `isActive` to return `true` for both `.running` and `.expired`:
+
+```swift
+// Stores/RestTimerState.swift
+var isActive: Bool {
+    switch self {
+    case .idle: return false
+    case .running, .expired: return true
+    }
+}
+```
+
+---
+
+## 15. Weight TextField Lag (TrainingView)
+
+### Problem
+Typing in the weight field was visually laggy / stuttery.
+
+### Root Cause
+`TrainingView.body` placed a `List` (`.insetGrouped`) inside a `VStack`. Every `@State` change (including each keystroke updating `weightText`) caused SwiftUI to re-run the entire view body. With `List` embedded in a `VStack`, SwiftUI must resolve the List's intrinsic height on every pass — this involves the UITableView's layout system and is expensive even for a short list.
+
+### Fix
+Restructured `TrainingView` so `loggedSetsList` (the `List`) is the **root view** returned from `body`. The exercise header, input fields, action buttons, and rest timer section are pinned above the list via `.safeAreaInset(edge: .top)`. This gives the List a stable full-screen frame from `NavigationStack`, eliminating the layout recalculation cycle.
+
+```swift
+// Before
+VStack(spacing: 0) {
+    exerciseHeader; inputSection; actionButtons; restTimerSection; loggedSetsList
+}
+
+// After
+Group {
+    loggedSetsList
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                exerciseHeader; inputSection; actionButtons; restTimerSection
+            }
+            .background(.background)
+        }
+}
+```
+
+---
+
+## 16. Stale Derived Data Showing Old Build Errors
+
+### Problem
+After applying model fixes, Xcode still showed `@Relationship` circular reference errors and `RestTimerAttributes not found` from files that had already been corrected. The error messages showed different line numbers than the actual on-disk source.
+
+### Root Cause
+Xcode's incremental build cache retained compiled artifacts from the pre-fix source. The compiler was expanding macros against cached intermediate files, not the current source.
+
+### Fix
+**Product → Clean Build Folder** (`Shift+Cmd+K`) in Xcode, then rebuild. No source changes required.
+
+---
+
 ## Current State
 
-- **BUILD SUCCEEDED** — zero errors, four warnings addressed
-- App launches and seeds 8 categories on first install
-- Exercise picker shows correct empty state with create button
-- Last session's weight + reps auto-fill when revisiting an exercise
+- **BUILD SUCCEEDED** — zero errors
+- Rest timer counts down correctly and shows expired banner
+- Weight input field is responsive with no lag
 - All SwiftData models correctly configured (one-sided `@Relationship` pattern)
 - Widget extension target (`Widget/`) — files exist on disk but are not yet added to a widget extension target in xcodeproj. Rest timer Live Activity will not function until that target is created.

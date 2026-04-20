@@ -14,6 +14,9 @@ import UserNotifications
 
 @Observable final class RestTimerStore {
     var state: RestTimerState = .idle
+    // Separate Int property so @Observable triggers a real value change each second.
+    // Reassigning the same Equatable enum value is a no-op for SwiftUI observation.
+    private(set) var remainingSeconds: Int = 0
 
     private var task: Task<Void, Never>? = nil
     private var currentActivity: Activity<RestTimerAttributes>? = nil
@@ -24,6 +27,7 @@ import UserNotifications
         task?.cancel()
         let endsAt = Date.now.addingTimeInterval(Double(seconds))
         state = .running(endsAt: endsAt, totalSeconds: seconds, exerciseName: exerciseName)
+        remainingSeconds = seconds
 
         scheduleNotification(seconds: seconds, exerciseName: exerciseName)
         startLiveActivity(endsAt: endsAt, exerciseName: exerciseName)
@@ -36,6 +40,7 @@ import UserNotifications
         cancelNotification()
         endLiveActivity()
         state = .idle
+        remainingSeconds = 0
     }
 
     func addTime(_ seconds: Int) {
@@ -47,6 +52,7 @@ import UserNotifications
         task?.cancel()
         cancelNotification()
         let remaining = max(1, Int(newEnd.timeIntervalSinceNow.rounded(.up)))
+        remainingSeconds = remaining
         scheduleNotification(seconds: remaining, exerciseName: name)
         updateLiveActivity(endsAt: newEnd)
         task = Task { await runCountdown(until: newEnd, exerciseName: name) }
@@ -55,9 +61,12 @@ import UserNotifications
     // MARK: - Countdown loop
 
     private func runCountdown(until end: Date, exerciseName: String) async {
-        while Date.now < end {
+        while true {
             try? await Task.sleep(for: .seconds(1))
             if Task.isCancelled { return }
+            let rem = max(0, Int(end.timeIntervalSinceNow.rounded(.up)))
+            await MainActor.run { remainingSeconds = rem }
+            if rem == 0 { break }
         }
         await MainActor.run {
             state = .expired(exerciseName: exerciseName)

@@ -14,8 +14,10 @@ enum RestTimerState: Equatable {
     case expired(exerciseName: String)
 
     var isActive: Bool {
-        if case .running = self { return true }
-        return false
+        switch self {
+        case .idle: return false
+        case .running, .expired: return true
+        }
     }
 
     var remainingSeconds: Int {

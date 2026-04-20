@@ -17,17 +17,17 @@ struct RestTimerBannerView: View {
         case .idle:
             EmptyView()
 
-        case .running(let endsAt, let totalSeconds, let exerciseName):
+        case .running(_, let totalSeconds, let exerciseName):
             HStack(spacing: 12) {
                 // Countdown ring
                 ZStack {
                     Circle()
                         .stroke(Color.orange.opacity(0.3), lineWidth: 3)
                     Circle()
-                        .trim(from: 0, to: progress(endsAt: endsAt, total: totalSeconds))
+                        .trim(from: 0, to: progress(remaining: timerStore.remainingSeconds, total: totalSeconds))
                         .stroke(Color.orange, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-                    Text("\(timerStore.state.remainingSeconds)")
+                    Text("\(timerStore.remainingSeconds)")
                         .font(.caption.monospacedDigit().bold())
                 }
                 .frame(width: 36, height: 36)
@@ -94,9 +94,8 @@ struct RestTimerBannerView: View {
         }
     }
 
-    private func progress(endsAt: Date, total: Int) -> CGFloat {
-        let remaining = max(0, endsAt.timeIntervalSinceNow)
+    private func progress(remaining: Int, total: Int) -> CGFloat {
         guard total > 0 else { return 0 }
-        return CGFloat(remaining / Double(total))
+        return CGFloat(remaining) / CGFloat(total)
     }
 }

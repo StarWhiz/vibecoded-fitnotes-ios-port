@@ -48,22 +48,21 @@ struct TrainingView: View {
     private var isEditing: Bool { workoutStore.selectedEntryID != nil }
 
     var body: some View {
-        VStack(spacing: 0) {
+        // List is the root view so it gets a stable full-screen frame from NavigationStack.
+        // Putting List inside VStack caused expensive layout recalculation on every keystroke.
+        Group {
             if let exercise {
-                // Exercise header with category color
-                exerciseHeader(exercise)
-
-                // Input fields
-                inputSection
-
-                // Action buttons
-                actionButtons
-
-                // Rest timer (if active for this exercise)
-                restTimerSection
-
-                // Logged sets
                 loggedSetsList
+                    .safeAreaInset(edge: .top, spacing: 0) {
+                        VStack(spacing: 0) {
+                            exerciseHeader(exercise)
+                            Divider()
+                            inputSection
+                            actionButtons
+                            restTimerSection
+                        }
+                        .background(.background)
+                    }
             } else {
                 ContentUnavailableView("Exercise Not Found", systemImage: "exclamationmark.triangle")
             }
@@ -294,7 +293,7 @@ struct TrainingView: View {
             HStack {
                 Image(systemName: "timer")
                     .foregroundStyle(.orange)
-                Text("Rest: \(timerStore.state.remainingSeconds)s")
+                Text("Rest: \(timerStore.remainingSeconds)s")
                     .font(.subheadline.monospacedDigit())
                 Spacer()
                 Button("Skip") {
