@@ -150,6 +150,8 @@ To avoid rebuilding every 7 days without a paid account:
 ---
 
 ### Building an IPA for AltStore (No Paid Account Required)
+> [!NOTE]  
+> If you don't want to build it yourself you can just visit the releases page and get the .ipa file there https://github.com/StarWhiz/vibecoded-fitnotes-ios-port/releases/tag/Main
 
 Xcode's built-in export options all require a paid Apple Developer account. You can work around this by manually extracting the app binary from an archive. This `.ipa` can then be sideloaded with AltStore.
 
